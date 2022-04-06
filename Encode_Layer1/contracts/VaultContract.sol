@@ -150,11 +150,15 @@ contract VaultContract is Ownable {
         deposit[msg.sender] += amount;
         balance[msg.sender] += toMint;
 
+		uint256 amountLow = amount % 2**128;
+		uint256 amountHigh = amount / 2**128;
+
         /* Send message to L2  */
         uint256[] memory payload = new uint256[](3);
         payload[0] = uint256(uint160(msg.sender));
         payload[1] = l2_user;
-        payload[2] = amount;
+        payload[2] = amountLow;
+        payload[3] = amountHigh;
         bytes32 message = starknetCore.sendMessageToL2(l2_bridge_address, l2_selector, payload);
         emit DepositL2(msg.sender, amount, l2_user, message);
     }
