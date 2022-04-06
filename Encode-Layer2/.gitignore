@@ -1,0 +1,13 @@
+/node_modules
+
+.env*
+
+/build
+
+/artifacts
+
+/env
+
+deployment_data
+
+goerli.deployments.txt

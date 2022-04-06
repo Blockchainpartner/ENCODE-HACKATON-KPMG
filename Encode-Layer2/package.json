@@ -1,0 +1,30 @@
+{
+  "name": "encode_hackaton",
+  "version": "1.0.0",
+  "description": "This repository contains the project of the KPMG team for the Starknet x Encode Hackaton",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blockchainpartner/Encode_hackaton.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Blockchainpartner/Encode_hackaton/issues"
+  },
+  "homepage": "https://github.com/Blockchainpartner/Encode_hackaton#readme",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "hardhat": "^2.9.0"
+  },
+  "devDependencies": {
+    "truffle": "^5.5.5"
+  }
+}
