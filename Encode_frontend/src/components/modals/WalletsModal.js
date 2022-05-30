@@ -20,6 +20,11 @@ export default function WalletsModal() {
   return (
     <>
       <button className="btn" onClick={() => setOpen(true)}>
+        <img
+          src="/icons/Ethereum_logo_2014.png"
+          alt="Ethereum"
+          className="rounded-full h-6 w-4 mr-2"
+        />
         {"Connect Wallet"}
       </button>
       {open && (
