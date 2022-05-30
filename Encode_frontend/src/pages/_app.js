@@ -17,13 +17,17 @@ import "react-toastify/dist/ReactToastify.css";
 import { useEffect } from "react";
 import { StarknetProvider } from '@starknet-react/core';
 
-
-
 function getErrorMessage(error) {
+  const handleNetworkSwitch = async (networkName) => {
+    await changeNetwork({ networkName });
+  };
+
   if (error instanceof NoEthereumProviderError) {
     return "No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.";
   } else if (error instanceof UnsupportedChainIdError) {
-    return "Wrong network. Switch to Goerli Network.";
+    return (<button onClick={() => handleNetworkSwitch("goerli")}>
+      "Wrong network. Switch to Goerli Network."
+    </button>);
   } else if (
     error instanceof UserRejectedRequestErrorInjected ||
     error instanceof UserRejectedRequestErrorWalletConnect
@@ -35,6 +39,52 @@ function getErrorMessage(error) {
   }
 }
 
+// {"name":"Görli","title":"Ethereum Testnet Görli","chain":"ETH","network":"testnet","rpc":["https://goerli.infura.io/v3/${INFURA_API_KEY}","wss://goerli.infura.io/v3/${INFURA_API_KEY}","https://rpc.goerli.mudit.blog/"],"faucets":["http://fauceth.komputing.org?chain=5&address=${ADDRESS}","https://goerli-faucet.slock.it?address=${ADDRESS}","https://faucet.goerli.mudit.blog"],"nativeCurrency":{"name":"Görli Ether","symbol":"GOR","decimals":18},"infoURL":"https://goerli.net/#about","shortName":"gor","chainId":5,"networkId":5,"ens":{"registry":"0x112234455c3a32fd11230c42e7bccd4a84e02010"},"explorers":[{"name":"etherscan-goerli","url":"https://goerli.etherscan.io","standard":"EIP3091"}]}
+const networks = {
+  goerli: {
+    chainId: `0x${Number(5).toString(16)}`,
+    chainName: "Görli",
+    nativeCurrency: {
+      name: "Görli Ether",
+      symbol: "GOR",
+      decimals: 18
+    },
+    rpcUrls: ["https://rpc.goerli.mudit.blog/"],
+    blockExplorerUrls: ["https://goerli.etherscan.io"]
+  }
+}
+const changeNetwork = async ({ networkName }) => {
+  try {
+    if (!window.ethereum) throw new Error("No crypto wallet found");
+    try {
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${Number(5).toString(16)}` }],
+      });
+    } catch (switchError) {
+      // This error code indicates that the chain has not been added to MetaMask.
+      if (switchError.code === 4902) {
+        try {
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                ...networks[networkName]
+              }
+            ]
+          });
+        } catch (addError) {
+          // handle "add" error
+          console.log(addError)
+        }
+      }
+      // handle other "switch" errors
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 function getLibrary(provider) {
   const library = new Web3Provider(provider);
   library.pollingInterval = 12000;
@@ -44,11 +94,13 @@ function getLibrary(provider) {
 const AppWrapper = ({ Component, pageProps }) => {
   const context = useWeb3React();
   const { error, connector, provider } = context;
+
   useEffect(() => {
     if (error) {
       toast.error(getErrorMessage(error));
     }
   }, [error]);
+
   return (
     <main
       className="w-5/6 pt-10 m-auto flex flex-col"
@@ -72,6 +124,7 @@ const AppWrapper = ({ Component, pageProps }) => {
 };
 
 function MyApp({ Component, pageProps }) {
+
   return (
     <>
       <Web3ReactProvider getLibrary={getLibrary}>
