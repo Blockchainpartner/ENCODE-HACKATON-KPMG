@@ -21,38 +21,6 @@ async function approveL1Tokens(spender, rawAmount, provider) {
     }
 }
 
-// function isApproved(isL1, amount) {
-//     const { account } = useStarknet()
-//     const { contract } = useL2TokenContract()
-//     const spender = process.env.L2_BRIDGE_ADDRESS
-//     const { data, loading, error } = useStarknetCall({
-//         contract,
-//         method: 'allowance',
-//         args: account ? [account, spender] : undefined,
-//     })
-//     const content = useMemo(() => {
-
-//         if (loading || !data?.length) {
-
-//             return <div>Approving</div>
-//         }
-
-//         if (error) {
-//             return <div>Error: {error}</div>
-//         }
-
-//         const balance = uint256ToBN(data[0])
-//         const isApproved = (data[0] == amount)
-//         return isApproved
-//     }, [data, loading, error])
-
-//     return (
-//         <div>
-//             {account ? <div>{content}</div> : null}
-//         </div>
-//     )
-// }
-
 // APPROVE INTERFACE IS approve(address spender, uint256 amount) 
 // HERE SPENDER IS THE BRIDGE/VAULT CONTRACT
 

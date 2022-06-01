@@ -59,7 +59,7 @@ const Bridge = () => {
                     </div>
                 </div>
                 <div className="grid mt-20">
-                    <Balance />
+                    {/* <Balance /> */}
                 </div>
             </div>
 

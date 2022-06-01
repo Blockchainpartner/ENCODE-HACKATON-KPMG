@@ -11,7 +11,7 @@ export default function ConnectStarknetWallet() {
         alt="ArgentX"
         className="rounded-full h-6 mr-2"
       />
-      {"Connect Argent X Wallet"}
+      {"Connect ArgentX Wallet"}
     </button>
   )
 }

@@ -2,25 +2,14 @@ import { useStarknet, useStarknetInvoke } from '@starknet-react/core'
 import React, { useState } from 'react'
 import { useBridgeContract } from '~/hooks/bridge'
 import useVaultContract from '~/hooks/vault'
+import useL1TokenContract from '~/hooks/token_l1'
+import { useL2TokenContract } from '~/hooks/token_l2'
 import { useWeb3React } from "@web3-react/core";
 import { ethers } from 'ethers';
 import { number } from 'starknet'
 import Approve from "./Approval"
 const { toFelt } = number
 import { bnToUint256, uint256ToBN } from 'starknet/dist/utils/uint256'
-
-
-async function depositToL2(rawAmount, l2_user, provider) {
-    const contract = useVaultContract(provider)
-    const signer = provider.getSigner()
-    const contractWithSigner = contract.connect(signer)
-    const amount = ethers.utils.parseUnits(rawAmount, 18)
-    try {
-        const tx = await contractWithSigner.depositTokenL2(amount, l2_user);
-    } catch (error) {
-        console.log(error);
-    }
-}
 
 async function withdrawTokenFromL1(rawAmount, provider) {
     const contract = useVaultContract(provider)
@@ -34,21 +23,73 @@ async function withdrawTokenFromL1(rawAmount, provider) {
     }
 }
 
+
+
 export default function DepositWithdrawButton({ amount, L1 }) {
     const { account } = useStarknet()
     const context = useWeb3React();
     const { account: l1Account, active, library } = context;
     const { contract: bridge } = useBridgeContract()
+    const { contract: l2Token } = useL2TokenContract()
     const { invoke } = useStarknetInvoke({ contract: bridge, method: 'withdraw' })
+    const { invoke: invokeApproval } = useStarknetInvoke({ contract: l2Token, method: 'approve' })
+
 
     const [l1Loading, setLoading] = useState(false);
+    const [l2Loading, setL2Loading] = useState(false);
+
 
     const isL1 = L1
 
     const amountToWithdraw = isL1 ? null : amount
     const amountToDeposit = isL1 ? amount : null
-    const amountToWithdrawFormated = bnToUint256(amountToWithdraw)
 
+    const handleDeposit = async (rawAmount, l2_user, provider) => {
+        const vaultContract = useVaultContract(provider)
+        const tokenContract = useL1TokenContract(provider)
+
+        const signer = provider.getSigner()
+        const vaultContractWithSigner = vaultContract.connect(signer)
+        const tokenContractWithSigner = tokenContract.connect(signer)
+        const amount = ethers.utils.parseUnits(rawAmount, 18)
+        const spenderOnL1 = process.env.L1_VAULT_ADDRESS
+        try {
+            setLoading(true)
+            const tx = await tokenContractWithSigner.approve(spenderOnL1, amount).then(
+                async (res) => {
+                    vaultContractWithSigner.depositTokenL2(amount, l2_user).then(res => setLoading(false));
+                }
+            );
+            return tx;
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleWithdrawal = async (rawAmount, l1_user, provider) => {
+        const signer = provider.getSigner()
+        const contract = useVaultContract(provider)
+        const contractWithSigner = contract.connect(signer)
+        const spenderOnL2 = toFelt(process.env.L2_BRIDGE_ADDRESS)
+
+        const amountToWithdrawFormated = bnToUint256(rawAmount)
+        const amount = ethers.utils.parseUnits(rawAmount, 18)
+
+        try {
+            setLoading(true)
+            invokeApproval({ args: [spenderOnL2, amountToWithdrawFormated] }).then(
+                async (res) => {
+                    invoke({ args: [l1_user, amountToWithdrawFormated] }).then(
+                        async (res) => {
+                            contractWithSigner.withdrawTokenL2(amount).then(res => setL2Loading(false))
+                        }
+                    )
+                }
+            )
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     const l1Account_felt = toFelt(l1Account)
     const l2Account_felt = toFelt(account)
@@ -60,30 +101,52 @@ export default function DepositWithdrawButton({ amount, L1 }) {
     return (
         <div>
             {isL1 ? (
-                <div className='flex justify-start items-center'>
-                    <Approve isL1={isL1} amount={amountToDeposit} provider={library} />
-                    <button className="border border-mm p-3 flex items-center justify-between rounded cursor-pointer hover:bg-mm-100 ml-5"
-                        onClick={() => depositToL2(amountToDeposit, l2Account_felt, library)}>
-                        {l1Loading ? (
-                            <div className="donutSpinner" />
-                        ) : ("Bridge")}
-                    </button>
-                </div >
-            ) : (
-                <div className='flex justify-start items-center'>
-                    <Approve isL1={isL1} amount={amountToWithdrawFormated} provider={library} />
-                    <button className="border border-mm p-3 flex items-center justify-between rounded cursor-pointer hover:bg-mm-100 ml-5"
-                        onClick={() => invoke({ args: [l1Account_felt, amountToWithdrawFormated] })}>{"Withdraw on L2"}
-                    </button>
-                    <button className="border border-mm p-3 flex items-center justify-between rounded cursor-pointer hover:bg-mm-100 ml-5"
-                        onClick={() => withdrawTokenFromL1(amountToWithdraw, library)}>{"Withdraw on L1"}
-                    </button>
+                account ?
+                    (<div className='flex justify-start items-center'>
+                        <button className="border border-mm p-3 flex items-center justify-between rounded cursor-pointer hover:bg-mm-100 w-auto"
+                            onClick={() => handleDeposit(amountToDeposit, l2Account_felt, library)}>
+                            {l1Loading ? (
+                                <div>
+                                    <div className="donutSpinner" />
+                                    <div className='text-sm font-medium'>
+                                        {`Transaction pending...`}
+                                    </div>
 
-                </div>
+                                </div>
+
+                            ) : ("Approve and Bridge")}
+                        </button>
+                    </div >)
+                    : (
+                        <div>
+                            {`Please connect your L2 wallet`}
+                        </div>
+                    )
+
+            ) : (
+                l1Account ?
+                    (<div className='flex justify-start items-center'>
+                        <button className="border border-mm p-3 flex items-center justify-between rounded cursor-pointer hover:bg-mm-100 w-auto"
+                            onClick={() => handleWithdrawal(amountToWithdraw, l1Account_felt, library)}>
+                            {l2Loading ? (
+                                <div>
+                                    <div className="donutSpinner" />
+                                    <div className='text-sm font-medium'>
+                                        {`Transaction is pending...`}
+                                    </div>
+
+                                </div>
+
+                            ) : ("Approve and Withdraw from L2")}
+                        </button>
+                    </div >)
+                    : (
+                        <div>
+                            {`Please connect your L1 wallet`}
+                        </div>
+                    )
             )
             }
         </div >
     )
 }
-
-{/* <button onClick={() => invoke({ args: ['0x1'] })}></button> */ }
