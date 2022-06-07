@@ -31,7 +31,7 @@ const Landing = () => {
         </div>
       </div>
       {/* RIGHT SIDE */}
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center h-auto">
         <img src="/home-bg.png" alt="Vaulti - Illustration" />
       </div>
     </div>

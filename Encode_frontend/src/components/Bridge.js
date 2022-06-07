@@ -4,7 +4,7 @@ import { useStarknet } from '@starknet-react/core';
 import { useWeb3React } from "@web3-react/core";
 import WalletsModal from "./modals/WalletsModal";
 import Deposit_input from "./Deposit_input";
-import Balance from "./DepositBalance";
+import Balance from "./Balance";
 import ConnectStarknetWallet from "./ConnectStarknetWallet"
 import { useBridgeContract } from '~/hooks/bridge'
 
@@ -26,7 +26,7 @@ const Bridge = () => {
                 </div>
             </div>
             <div className="mt-10">
-                <div className="flex flex-row">
+                <div className="flex justify-between">
                     <div className="shadow-lg flex flex-col items-start mr-32 p-4 bg-gradient-to-r from-brand1 to-brand2 rounded">
                         <h6 className="font-semibold mb-2">{"Ethereum"}</h6>
                         {active ? (
@@ -58,7 +58,8 @@ const Bridge = () => {
                             balance={0} />
                     </div>
                 </div>
-                <div className="grid mt-20">
+                <div className="flex mt-20">
+
                     {/* <Balance /> */}
                 </div>
             </div>
