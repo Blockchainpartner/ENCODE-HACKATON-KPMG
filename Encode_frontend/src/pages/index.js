@@ -5,11 +5,11 @@ import { useWeb3React } from "@web3-react/core";
 
 import { useStarknet } from '@starknet-react/core';
 
-
 export default function Home() {
   const context = useWeb3React();
   const { active } = context;
   const { account } = useStarknet()
+
   return (
     <div className="flex flex-col justify-center">
       {/* {active && account ? (<div>

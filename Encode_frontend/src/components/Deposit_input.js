@@ -153,8 +153,6 @@ const Deposit_input = ({ L1 }) => {
                         onChange={e => setDepositAmount(e.target.value)}
                         inputMode="decimal"
                         title="Token Amount"
-                        autoComplete="off"
-                        autoCorrect="off"
                         type="text"
                         placeholder={'Amount' || '0.0'}
                         minLength={1}
@@ -167,8 +165,6 @@ const Deposit_input = ({ L1 }) => {
                         onChange={e => setWithdrawAmount(e.target.value)}
                         inputMode="decimal"
                         title="Token Amount"
-                        autoComplete="off"
-                        autoCorrect="off"
                         type="text"
                         placeholder={'Amount' || '0.0'}
                         minLength={1}
@@ -181,7 +177,7 @@ const Deposit_input = ({ L1 }) => {
             <div className="mt-4">
                 {isL1 ? (<DepositWithdrawButton amount={depositAmount} L1={isL1} />) : (
                     <div>
-                        <p className="text-sm font-medium mb-2">{`You need to call the withdraw function on L2 first and wait a bit before calling the L1 withdraw function !`}</p>
+                        {/* <p className="text-sm font-medium mb-2">{`You need to call the withdraw function on L2 first and wait a bit before calling the L1 withdraw function !`}</p> */}
                         <DepositWithdrawButton amount={withdrawAmount} L1={false} />
                     </div>
 
