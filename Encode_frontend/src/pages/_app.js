@@ -103,7 +103,7 @@ const AppWrapper = ({ Component, pageProps }) => {
 
   return (
     <main
-      className="w-5/6 pt-10 m-auto flex flex-col"
+      className="w-5/6 pt-5 m-auto flex flex-col"
       style={{ minHeight: "100vh" }}
     >
       <ToastContainer
